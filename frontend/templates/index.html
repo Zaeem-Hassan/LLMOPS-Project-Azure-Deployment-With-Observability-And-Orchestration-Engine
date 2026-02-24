@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Guardian AI — Video Compliance Auditor</title>
+    <meta name="description" content="AI-powered brand compliance auditing for YouTube videos using Azure Video Indexer and GPT-4o.">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Animated background orbs -->
+    <div class="bg-orb bg-orb--blue"></div>
+    <div class="bg-orb bg-orb--purple"></div>
+    <div class="bg-orb bg-orb--cyan"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__badge">
+                <span class="header__badge-dot"></span>
+                AI-Powered Compliance Engine
+            </div>
+            <h1 class="header__title">Brand Guardian AI</h1>
+            <p class="header__subtitle">Analyze YouTube videos for brand compliance violations using Azure Video Indexer and GPT-4o intelligence.</p>
+        </header>
+
+        <!-- Audit Form -->
+        <div class="card">
+            <div class="card__header">
+                <div class="card__icon">🔗</div>
+                <h2 class="card__title">Submit Video for Audit</h2>
+            </div>
+            <form id="audit-form">
+                <div class="input-group">
+                    <input
+                        type="url"
+                        id="video-url"
+                        class="input-group__field"
+                        placeholder="Paste YouTube video URL (e.g. https://youtube.com/watch?v=...)"
+                        required
+                    >
+                    <button type="submit" id="submit-btn" class="btn btn--primary">
+                        <span class="btn__text">🚀 Audit</span>
+                        <div class="spinner"></div>
+                    </button>
+                </div>
+                <p class="help-text">
+                    🔒 Videos are processed securely through Azure Video Indexer
+                </p>
+            </form>
+        </div>
+
+        <!-- Status Bar -->
+        <div id="status-bar" class="status-bar">
+            <div class="status-bar__spinner"></div>
+            <span id="status-text" class="status-bar__text">Processing...</span>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="results">
+            <div class="card">
+                <div class="card__header">
+                    <div class="card__icon">📊</div>
+                    <h2 class="card__title">Audit Results</h2>
+                </div>
+
+                <!-- Overview Stats -->
+                <div class="result-overview">
+                    <div class="stat-card">
+                        <div class="stat-card__label">Status</div>
+                        <div id="result-status" class="stat-card__value">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__label">Video ID</div>
+                        <div id="result-video-id" class="stat-card__value stat-card__value--neutral">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__label">Violations</div>
+                        <div id="result-violations-count" class="stat-card__value">0</div>
+                    </div>
+                </div>
+
+                <!-- Violations -->
+                <div id="violations-section" class="violations">
+                    <h3 class="violations__title">⚠️ Compliance Issues</h3>
+                    <div id="violations-list"></div>
+                </div>
+
+                <!-- Report Summary -->
+                <div class="report-summary">
+                    <div class="report-summary__title">📝 Final Report</div>
+                    <p id="report-text" class="report-summary__text">—</p>
+                    <p id="session-id" style="margin-top: 12px; font-size: 0.75rem; color: var(--text-muted);"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer__text">Brand Guardian AI • Powered by Azure Video Indexer, Azure OpenAI & LangGraph</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

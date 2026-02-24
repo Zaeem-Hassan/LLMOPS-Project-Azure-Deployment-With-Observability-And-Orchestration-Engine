@@ -8,19 +8,19 @@ from backend.src.graph.workflow import app
 
 logger = logging.getLogger("main")  
 
-logger.basicConfig(
+logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s-%(levelname)s-%(message)s"
 )
 
-logger = logger.getLogger("brand-guardian-runner")
+logger = logging.getLogger("brand-guardian-runner")
 
 def run_cli_simulations():
     session_id = str(uuid.uuid4())
     logger.info(f"Starting Audit Session: {session_id}")
 
     initial_state = {
-        "video_url" : "",
+        "video_url" : "https://www.youtube.com/watch?v=Bcpu-jqAL6w",
         "video_id" : f"vid_{session_id[:8]}",
         "compliance_results" : [],
         "errors" : [] 
@@ -56,3 +56,4 @@ def run_cli_simulations():
 
 if __name__ == "__main__":
     run_cli_simulations()
+

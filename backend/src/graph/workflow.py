@@ -14,7 +14,7 @@ def create_graph():
     workflow.add_node("indexor",index_video_node)
     workflow.add_node("auditor",audit_content_node)
 
-    workflow.set_entry_point("indexer")
+    workflow.set_entry_point("indexor")
 
     workflow.add_edge("indexor","auditor")
 

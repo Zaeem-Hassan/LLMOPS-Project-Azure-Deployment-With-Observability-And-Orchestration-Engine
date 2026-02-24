@@ -14,7 +14,7 @@ from backend.src.graph.state import VideoAuditState, ComplianceIssue
 from backend.src.services.video_indexer import VideoIndexerService
 
 logger = logging.getLogger("brand-guardian")
-logging.basicConfig(level)
+logging.basicConfig(level=logging.INFO)
 
 
 def index_video_node(state:VideoAuditState) -> Dict[str,Any]:
@@ -28,10 +28,11 @@ def index_video_node(state:VideoAuditState) -> Dict[str,Any]:
     try:
         vi_service = VideoIndexerService()
         if "youtube.com" in video_url or "youtu.be" in video_url:
-            local_path = vi_service.download_video(video_url,local_filename)
+            vi_service.download_youtube_video(video_url, local_filename)
+            local_path = local_filename
         else :
             raise Exception("Please provide a valid youtube url")
-        azure_video_id = vi_service.upload_and_index(local_path,video_id_input)
+        azure_video_id = vi_service.upload_video(local_path, video_id_input)
         logger.info(f"Upload Success {azure_video_id}")
         
         if os.path.exists(local_path):
@@ -50,7 +51,7 @@ def index_video_node(state:VideoAuditState) -> Dict[str,Any]:
             "ocr_text": []
         }
 
-def audio_content_node(state:VideoAudioState) -> Dict[str,Any]:
+def audit_content_node(state:VideoAuditState) -> Dict[str,Any]:
     logger.info("[Node:Auditor] querying Knowledge Base")
     transcript = state.get("transcript","")
     if not transcript:
@@ -76,15 +77,15 @@ def audio_content_node(state:VideoAudioState) -> Dict[str,Any]:
     )
 
     search_client = AzureSearch(
-        endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
-        api_key=os.getenv("AZURE_SEARCH_API_KEY"),
+        azure_search_endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
+        azure_search_key=os.getenv("AZURE_SEARCH_API_KEY"),
         index_name=os.getenv("AZURE_SEARCH_INDEX_NAME"),
         embedding_function=embeddings.embed_query
     )
 
     ocr_text = state.get("ocr_text",[])
     query_text = transcript + "".join(ocr_text)
-    docs = vector_store.similarity_search(query_text,k=5)
+    docs = search_client.similarity_search(query_text,k=5)
     retrieved_context = "\n".join([doc.page_content for doc in docs])
     system_prompt = f"""You are a senior brand compliance auditor
     OFFICIAL REGULATORY RULES:
@@ -94,17 +95,15 @@ def audio_content_node(state:VideoAudioState) -> Dict[str,Any]:
     2. Identify any violations of the rules
     3. Return stricly JSON in the following format:
     {{
-        {
-  "compliance_results": [
-    {
-      "category": "Claim Validation",
-      "severity": "CRITICAL",
-      "description": "Explanation of the violation..."
-    }
-  ],
-  "status": "FAIL",
-  "final_report": "Summary of findings..."
-    }
+      "compliance_results": [
+        {{
+          "category": "Claim Validation",
+          "severity": "CRITICAL",
+          "description": "Explanation of the violation..."
+        }}
+      ],
+      "status": "FAIL",
+      "final_report": "Summary of findings..."
     }}
 
     If no violations are found , set "status" to "PASS" and "compliance_results" to []

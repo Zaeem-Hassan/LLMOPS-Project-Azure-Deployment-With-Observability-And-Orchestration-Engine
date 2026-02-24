@@ -5,6 +5,15 @@ import requests
 import yt_dlp
 from azure.identity import DefaultAzureCredential
 
+# Auto-detect Azure CLI path if not already on PATH
+for _cli_path in [
+    r"C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin",
+    r"C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin",
+]:
+    if os.path.isdir(_cli_path) and _cli_path not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = _cli_path + ";" + os.environ.get("PATH", "")
+        break
+
 logger = logging.getLogger("video-indexer")
 
 class VideoIndexerService:
@@ -13,6 +22,7 @@ class VideoIndexerService:
         self.subscription_id = os.getenv("AZURE_SUBSCRIPTION_ID")
         self.resource_group_name = os.getenv("AZURE_RESOURCE_GROUP")
         self.AZURE_VI_NAME = os.getenv("AZURE_VI_NAME")
+        self.account_id = os.getenv("AZURE_VI_ACCOUNT_ID")
         self.location = os.getenv("AZURE_VI_LOCATION")
         self.api_key = os.getenv("AZURE_VI_API_KEY")
 
@@ -28,7 +38,7 @@ class VideoIndexerService:
     def get_account_tokken(self,arm_access_token):
         url = (
     f"https://management.azure.com/subscriptions/{self.subscription_id}"
-    f"/resourceGroups/{self.resource_group}"
+    f"/resourceGroups/{self.resource_group_name}"
     f"/providers/Microsoft.VideoIndexer/accounts/{self.AZURE_VI_NAME}"
     f"/generateAccessToken?api-version=2024-01-01"
 )
@@ -39,8 +49,7 @@ class VideoIndexerService:
         if response.status_code == 200:
             return response.json().get("accessToken")
         else:
-            logger.error(f"Error getting account token: {response.json()}")
-            raise
+            raise Exception(f"Error getting account token: {response.json()}")
     
     def download_youtube_video(self,youtube_url,output_path="temp_video.mp4"):
         logger.info(f"Downloading video from {youtube_url}")
@@ -63,7 +72,7 @@ class VideoIndexerService:
         arm_token = self.get_access_token()
         vi_token = self.get_account_tokken(arm_token)
 
-        api_url = f"https://api.video.ai/{self.location}/Accounts/{self.AZURE_VI_NAME}/Videos"
+        api_url = f"https://api.videoindexer.ai/{self.location}/Accounts/{self.account_id}/Videos"
         parms = {
             "accessToken" : vi_token,
             "name" : video_name,
@@ -81,8 +90,7 @@ class VideoIndexerService:
                 logger.info(f"Video {video_name} uploaded successfully")
                 return response.json().get("id")
             else:
-                logger.error(f"Error uploading video {video_name}: {response.json()}")
-                raise
+                raise Exception(f"Error uploading video {video_name}: {response.json()}")
 
     def wait_for_processing(self,video_id):
         logger.info(f"Waiting for video {video_id} to be processed")
@@ -90,11 +98,11 @@ class VideoIndexerService:
             arm_token  = self.get_access_token()
             vi_token = self.get_account_tokken(arm_token)
 
-            api_url = f"https://api.video.ai/{self.location}/Accounts/{self.AZURE_VI_NAME}/Videos/{video_id}"
+            api_url = f"https://api.videoindexer.ai/{self.location}/Accounts/{self.account_id}/Videos/{video_id}/Index"
             params = {
                 "accessToken" : vi_token,
             }
-            response = requests.get(url,params=params)
+            response = requests.get(api_url,params=params)
             data  = response.json()
             
             state = data.get("state")
@@ -112,12 +120,12 @@ class VideoIndexerService:
 
     def extract_data(self,vi_json):
         transcript_lines = []
-        for v in vi.json.get("videos",[]):
+        for v in vi_json.get("videos",[]):
             for insight in v.get("insights",{}).get("transcript",[]):
-                transcrpit_lines.append(insight.get("text"))
+                transcript_lines.append(insight.get("text"))
         
         ocr_lines = []
-        for v in vi.json.get("videos",[]):
+        for v in vi_json.get("videos",[]):
             for insight in v.get("insights",{}).get("ocr",[]):
                 ocr_lines.append(insight.get("text"))
 
