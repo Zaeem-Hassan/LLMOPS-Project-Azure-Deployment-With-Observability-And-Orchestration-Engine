@@ -83,7 +83,7 @@ def audio_content_node(state:VideoAudioState) -> Dict[str,Any]:
     )
 
     ocr_text = state.get("ocr_text",[])
-    query_text = f"{transcript}{"".join(ocr_text)}"
+    query_text = transcript + "".join(ocr_text)
     docs = vector_store.similarity_search(query_text,k=5)
     retrieved_context = "\n".join([doc.page_content for doc in docs])
     system_prompt = f"""You are a senior brand compliance auditor

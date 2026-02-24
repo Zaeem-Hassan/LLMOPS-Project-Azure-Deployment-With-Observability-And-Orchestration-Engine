@@ -48,8 +48,8 @@ class VideoIndexerService:
         ydl_opts = {
             "format": "best[ext=mp4]",
             "outtmpl": output_path,
-            "quit" : True,
-            "overwrites_output": True,
+            "quit" : False,
+            "overwrites_output": False,
 
         }
         try:
@@ -129,4 +129,3 @@ class VideoIndexerService:
                 "platform" :"youtube"
             }
         }
-        
