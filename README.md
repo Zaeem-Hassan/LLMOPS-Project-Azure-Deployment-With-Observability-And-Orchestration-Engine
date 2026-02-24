@@ -1,4 +1,5 @@
 # 🛡️ Brand Guardian AI
+<img src="Project2_Langgraph_Architecture.png"  width="1536" height="1024">
 
 > **AI-powered video compliance auditing platform** — Automatically analyze YouTube videos for brand guideline violations using Azure Video Indexer, Azure OpenAI (GPT-4o), and LangGraph orchestration.
 
